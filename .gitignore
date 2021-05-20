@@ -1,0 +1,12 @@
+build
+prod
+coverage
+target
+node_modules
+*.log
+.idea/
+.vscode/
+jest_cache
+/packages/sportsbook-web-component/src/*/Config.g.json
+/packages/sportsbook-web-component/dist
+/ansible/playbooks/web-client/main.retry

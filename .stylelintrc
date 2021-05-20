@@ -1,0 +1,17 @@
+{
+  "processors": ["stylelint-processor-styled-components"],
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-styled-components"
+  ],
+  "syntax": "scss",
+  "rules": {
+    "indentation": ["tab", {
+      indentInsideParens: "twice"
+    }],
+    "declaration-block-semicolon-newline-after": null,
+    "comment-empty-line-before": "never",
+    "no-extra-semicolons": null,
+    "block-no-empty": null
+  }
+}

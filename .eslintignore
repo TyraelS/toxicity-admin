@@ -1,0 +1,12 @@
+build
+prod
+coverage
+node_modules
+/packages/sportsbook-web-component/dist
+ansible
+docker
+.git
+jest_cache
+cms-scripts
+/packages/sportsbook-web-component/src/assets
+/packages/sportsbook-web-api
