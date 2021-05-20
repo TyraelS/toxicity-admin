@@ -13,7 +13,17 @@ const e = require('express');
 require('@tensorflow/tfjs');
 const toxicity = require('@tensorflow-models/toxicity');
 
-const threshold = 0.9;
+const threshold = 0.8;
+
+const criteriaSeverities = {
+	'identity_attack': 0.2,
+	'insult': 0.2,
+	'obscene': 0.2,
+	'severe_toxicity': 0.3,
+	'sexual_explicit': 0.3,
+	'threat': 0.3,
+	'toxicity': 0.1
+}
 
 //@route  POST api/users
 //@desc   register user
@@ -36,7 +46,7 @@ router.get(
 	  if(userId){
 		  user = await User.findById(userId).select('-password');
 		  if(user.role === 'admin'){
-			posts = await Post.find({status: 'open'}).setOptions({limit: 15});
+			posts = await Post.find({status: 'open', moderation: { moderated: false }}).setOptions({limit: 15});
 		  } else {
 			posts = await Post.find({status: 'open'}).select('-moderation').setOptions({limit: 15});
 		  }
@@ -79,13 +89,20 @@ router.post('/post', auth, [
 			res.status(400).json({ error: 'user is banned from posting' });
 		} else {
 			const model = await toxicity.load(threshold);
-			const classifiedPost = await model.classify([content]);
+			const analysisResult = await model.classify([content]);
+			const severityCoefficient = analysisResult.reduce((acc, criteria) => {
+				const criteriaProbability = criteria.results[0].match ? 1 : criteria.results[0].probabilities['1'];
+				return acc + criteriaSeverities[criteria.label] * criteriaProbability;
+			}, 0);
 
 			let post = new Post({
 				userId,
 				content,
-				moderation: classifiedPost
-			});
+				moderation: {
+					severityCoefficient: severityCoefficient % 1,
+					analysisResult,
+					moderated: false
+			}});
 
 				//   ML ANALYSIS HERE
 
@@ -95,8 +112,7 @@ router.post('/post', auth, [
 				  id: post.id,
 				  userId: post.userId,
 				  content: post.content,
-				  date: post.date,
-				  moderation: post.moderation
+				  date: post.date
 				}
 			};
 
