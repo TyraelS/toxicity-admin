@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../../middleware/auth');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
@@ -8,6 +9,11 @@ const { check, validationResult } = require('express-validator/check');
 const User = require('../../models/User');
 const Post = require('../../models/Post');
 const e = require('express');
+
+require('@tensorflow/tfjs');
+const toxicity = require('@tensorflow-models/toxicity');
+
+const threshold = 0.9;
 
 //@route  POST api/users
 //@desc   register user
@@ -72,9 +78,13 @@ router.post('/post', auth, [
 		if(user.banned){
 			res.status(400).json({ error: 'user is banned from posting' });
 		} else {
+			const model = await toxicity.load(threshold);
+			const classifiedPost = await model.classify([content]);
+
 			let post = new Post({
 				userId,
-				content
+				content,
+				moderation: classifiedPost
 			});
 
 				//   ML ANALYSIS HERE
@@ -86,6 +96,7 @@ router.post('/post', auth, [
 				  userId: post.userId,
 				  content: post.content,
 				  date: post.date,
+				  moderation: post.moderation
 				}
 			};
 

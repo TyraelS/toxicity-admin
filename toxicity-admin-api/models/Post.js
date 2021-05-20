@@ -17,6 +17,10 @@ const PostSchema = new mongoose.Schema({
 	type: String,
 	required: true,
 	default: 'open'
+  },
+  moderation: {
+	  type: Object,
+	  default: []
   }
 });
 
