@@ -52,7 +52,7 @@ router.get(
   }
 );
 
-router.post('/post', [
+router.post('/post', auth, [
     check('userId', 'userId is required')
       .not()
       .isEmpty(),
