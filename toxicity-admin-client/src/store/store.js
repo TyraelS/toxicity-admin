@@ -5,10 +5,11 @@ import { apiMiddleware } from 'redux-api-middleware';
 import { Map, fromJS, Set, isIndexed } from 'immutable';
 import Immutable from 'immutable';
 
-import { postsReducer } from '../ducks';
+import { postsReducer, userReducer } from '../ducks';
 
 const rootReducer  = combineReducers({
-	postsReducer
+	posts: postsReducer,
+	user: userReducer
 });
 
 const getInitialStore = () => Map();

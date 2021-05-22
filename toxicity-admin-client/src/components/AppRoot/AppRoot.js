@@ -1,14 +1,16 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { postsActions } from '../../ducks';
+import { postsActions, userActions } from '../../ducks';
 import useActionCreators from '../../hooks/useActionCreators';
 
 const AppRoot = () => {
-	const [fetchPosts] = useActionCreators([postsActions.fetchPosts]);
+	const [fetchPosts, auth] = useActionCreators([postsActions.fetchPosts, userActions.auth]);
 
 	useEffect(() => {
-		fetchPosts();
+		auth('shit@gmail.com', 'fgfjasfd13s').then(() => {
+			fetchPosts();
+		});
 	}, [])
 
 	return <div></div>

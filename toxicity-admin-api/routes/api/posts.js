@@ -36,23 +36,32 @@ router.get(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, deleted, moderated } = req.body;
+	const token = req.header('x-auth-token');
+	let userFromToken = {};
+
+	if(token){
+		const decoded = jwt.verify(token, config.get('jwtSecret'));
+
+		userFromToken = decoded.user;
+	}
+
+    const { deleted, moderated } = req.body;
+	const { id } = userFromToken;
 
     try {
-
       let posts;
 	  let user;
 
-	  if(userId){
-		  user = await User.findById(userId).select('-password');
+	  if(id){
+		  user = await User.findById(id).select('-password');
 		  if(user.role === 'admin'){
 			  if(deleted){
 				posts = await Post.find({status: 'deleted'}).setOptions({limit: 15}).sort({moderation: {moderationDate: -1}});
 			  }
 			  else if(moderated){
-				posts = await Post.find({moderation: { moderated: true }}).setOptions({limit: 15}).sort({moderation: {moderationDate: -1}});
+				posts = await Post.find({'moderation.moderated': true}).setOptions({limit: 15}).sort({moderation: {moderationDate: -1}});
 			  } else {
-				posts = await Post.find({status: 'open', moderation: { moderated: false }}).setOptions({limit: 15}).sort('-date');
+				posts = await Post.find({status: 'open', 'moderation.moderated': false}).setOptions({limit: 15}).sort('-date');
 			  }
 		  } else {
 			posts = await Post.find({status: 'open'}).select('-moderation').setOptions({limit: 15}).sort('-date');
@@ -76,9 +85,6 @@ router.get(
 );
 
 router.post('/post', auth, [
-    check('userId', 'userId is required')
-      .not()
-      .isEmpty(),
 	check('content', 'message text is required').not().isEmpty()
   ],
   async (req, res) => {
@@ -87,10 +93,23 @@ router.post('/post', auth, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, content } = req.body;
+	const token = req.header('x-auth-token');
+	let userFromToken = {};
+
+	if(token){
+		const decoded = jwt.verify(token, config.get('jwtSecret'));
+
+		userFromToken = decoded.user;
+	} else {
+		res.status(401).send('Forbidden');
+	}
+
+	const { id } = userFromToken;
+
+    const { content } = req.body;
 
     try {
-		const user = await User.findById(userId).select('-password');
+		const user = await User.findById(id).select('-password');
 
 		if(user.banned){
 			res.status(400).json({ error: 'user is banned from posting' });
@@ -103,7 +122,7 @@ router.post('/post', auth, [
 			}, 0);
 
 			let post = new Post({
-				userId,
+				userId: id,
 				content,
 				moderation: {
 					severityCoefficient: severityCoefficient % 1,
