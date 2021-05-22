@@ -2,13 +2,15 @@ import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
-const createStore = () => ({});
+import AppRoot from './components/AppRoot';
 
-function App() {
+import store from './store';
+
+const App = () => {
   return (
 	<BrowserRouter>
-		<Provider store={ createStore() }>
-			<div></div>
+		<Provider store={ store }>
+			<AppRoot />
 		</Provider>
 	</BrowserRouter>
   );
