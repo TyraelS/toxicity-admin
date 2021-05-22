@@ -4,6 +4,7 @@ import thunk from 'redux-thunk';
 import { apiMiddleware } from 'redux-api-middleware';
 import { Map, fromJS, Set, isIndexed } from 'immutable';
 import Immutable from 'immutable';
+import Cookies from 'js-cookie';
 
 import { postsReducer, userReducer } from '../ducks';
 
@@ -12,7 +13,15 @@ const rootReducer  = combineReducers({
 	user: userReducer
 });
 
-const getInitialStore = () => Map();
+const getInitialStore = () => {
+	const initialStore = Map();
+
+	return initialStore.withMutations(initialStore => {
+		if(Cookies.get('sessionToken')){
+			initialStore.setIn(['user', 'sessionToken'], Cookies.get('sessionToken'));
+		}
+	});
+};
 
 const reduxDevTools =
 	window.__REDUX_DEVTOOLS_EXTENSION__ &&
@@ -23,4 +32,4 @@ const middleware = applyMiddleware(
 	apiMiddleware,
 );
 
-export default createStore(rootReducer, Map(), reduxDevTools ? compose(middleware, reduxDevTools) : middleware);
+export default createStore(rootReducer, getInitialStore(), reduxDevTools ? compose(middleware, reduxDevTools) : middleware);

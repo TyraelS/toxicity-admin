@@ -152,7 +152,6 @@ router.post('/post', auth, [
 )
 
 router.post('/moderate', auth,
-	check('userId', 'userId is required').not().isEmpty(),
 	check('postId', 'postId is required').not().isEmpty(),
 	check('status', 'updated status is required').not().isEmpty(),
 	check('reason', 'reason is required').not().isEmpty(),
@@ -162,13 +161,26 @@ router.post('/moderate', auth,
       		return res.status(400).json({ errors: errors.array() });
     	}
 
-    	const { userId, postId, status, reason } = req.body;
+		const token = req.header('x-auth-token');
+		let userFromToken = {};
+
+		if(token){
+			const decoded = jwt.verify(token, config.get('jwtSecret'));
+
+			userFromToken = decoded.user;
+		} else {
+			res.status(401).send('Forbidden');
+		}
+
+		const { id } = userFromToken;
+
+    	const { postId, status, reason } = req.body;
 
     	try {
 			let user;
 			let post;
 
-			user = await User.findById(userId).select('-password');
+			user = await User.findById(id).select('-password');
 
 			if(user.role !== 'admin'){
 				res.status(402).send('Forbidden');

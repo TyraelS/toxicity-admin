@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { postsActions, userActions } from '../../ducks';
 import useActionCreators from '../../hooks/useActionCreators';
 
 const AppRoot = () => {
-	const [fetchPosts, auth] = useActionCreators([postsActions.fetchPosts, userActions.auth]);
+	const [fetchPosts, auth, getUserProfile] = useActionCreators([postsActions.fetchPosts, userActions.auth, userActions.getUserProfile]);
+	const sessionToken = useSelector(state => state.getIn(['user', 'sessionToken']));
 
 	useEffect(() => {
-		auth('shit@gmail.com', 'fgfjasfd13s').then(() => {
+		if(sessionToken){
+			getUserProfile();
 			fetchPosts();
-		});
-	}, [])
+		} else {
+			auth('shit@gmail.com', 'fgfjasfd13s').then(() => {
+				getUserProfile();
+				fetchPosts();
+			});
+		}
+	}, []);
 
 	return <div></div>
 }

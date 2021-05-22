@@ -5,11 +5,50 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator/check');
 
+const auth = require('../../middleware/auth');
+
 const User = require('../../models/User');
 
 //@route  POST api/users
 //@desc   register user
 //@access Public
+
+router.get(
+	'/profile',
+	auth,
+	async (req,res) => {
+		const errors = validationResult(req);
+    	if (!errors.isEmpty()) {
+     		return res.status(400).json({ errors: errors.array() });
+    	}
+
+		const token = req.header('x-auth-token');
+		let userFromToken = {};
+
+		if(token){
+			const decoded = jwt.verify(token, config.get('jwtSecret'));
+
+			userFromToken = decoded.user;
+		} else {
+			res.status(401).send('Forbidden');
+		}
+
+		const { id } = userFromToken;
+
+		try{
+			const user = await User.findById(id).select('-password').select('-_id').select('-__v');
+			const payload = {
+				user
+			};
+
+			res.json(payload);
+		} catch (err) {
+			console.error(err.message);
+			res.status(500).send('Server error');
+		}
+	}
+);
+
 router.post(
   '/',
   [
