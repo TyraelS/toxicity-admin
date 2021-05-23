@@ -13,7 +13,7 @@ import useActionCreators from '../../hooks/useActionCreators';
 import Holder, { AppContainer } from './AppRoot.style';
 
 const AppRoot = () => {
-	const [fetchPosts, auth, getUserProfile] = useActionCreators([postsActions.fetchPosts, userActions.auth, userActions.getUserProfile]);
+	const [fetchPosts, getUserProfile] = useActionCreators([postsActions.fetchPosts, userActions.getUserProfile]);
 	const sessionToken = useSelector(state => state.getIn(['user', 'sessionToken']));
 	const posts = useSelector(state => state.get('posts', Map())).toList().toJS();
 
@@ -21,11 +21,6 @@ const AppRoot = () => {
 		if(sessionToken){
 			getUserProfile();
 			fetchPosts();
-		} else {
-			auth('shit@gmail.com', 'fgfjasfd13s').then(() => {
-				getUserProfile();
-				fetchPosts();
-			});
 		}
 	}, []);
 

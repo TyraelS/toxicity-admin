@@ -51,6 +51,7 @@ const Login = () => {
 	const [ passwordError, setPasswordError ] = useState();
 	const [ emailManuallyChanged, setEmailManuallyChanged ] = useState(false);
 	const [ passwordManuallyChanged, setPasswordManuallyChanged ] = useState(false);
+	const [ loading, setLoading ] = useState(false);
 	const [ auth, getUserProfile ] = useActionCreators([userActions.auth, userActions.getUserProfile]);
 	const loggedIn = useSelector(state => !!state.getIn(['user', 'sessionToken']));
 	const location = useLocation();
@@ -87,22 +88,24 @@ const Login = () => {
 	}
 
 	const login = () => {
+		setLoading(true);
 		auth(email, password).then(() => {
+			setLoading(false);
 			getUserProfile();
 		});
 	};
 
 	return (
 		<Container className={classes.root} maxWidth="sm">
-			<Box className={classes.spinnerHolder}>
+			{loading && <Box className={classes.spinnerHolder}>
 				<CircularProgress />
-			</Box>
-			<Typography className={classes.title} variant="h3">Please provide your credentials</Typography>
-			<form className={classes.formHolder} autoComplete="off">
+			</Box> }
+			{ !loading && <Typography className={classes.title} variant="h3">Please provide your credentials</Typography> }
+			{ !loading && <form className={classes.formHolder} autoComplete="off">
   				<TextField required error={ emailError } helperText={emailError} fullWidth id="email" label="Email" variant="outlined" onChange={onEmailChange}/>
   				<TextField required error={ passwordError} helperText = { passwordError } fullWidth type="password" id="password" label="Password" variant="outlined" onChange={onPasswordChange} />
 				<Button size="large" variant="contained" disabled={emailError || passwordError} fullWidth disableElevation color="primary" onClick={login}>Login</Button>
-			</form>
+			</form> }
 		</Container>
 	)
 };
