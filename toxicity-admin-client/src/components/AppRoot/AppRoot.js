@@ -5,8 +5,12 @@ import { Map } from 'immutable';
 import { postsActions, userActions } from '../../ducks';
 
 import PostDetailsCard from '../../components/PostDetailsCard';
+import AppHeader from '../../components/AppHeader';
+import Routes from '../../components/Routes';
 
 import useActionCreators from '../../hooks/useActionCreators';
+
+import Holder, { AppContainer } from './AppRoot.style';
 
 const AppRoot = () => {
 	const [fetchPosts, auth, getUserProfile] = useActionCreators([postsActions.fetchPosts, userActions.auth, userActions.getUserProfile]);
@@ -26,12 +30,15 @@ const AppRoot = () => {
 	}, []);
 
 	return (
-		<div>
-			hello
-			{posts.map((post) =>
-				<PostDetailsCard post={post} key={post._id} />
-			)}
-		</div>
+		<Holder>
+			<AppContainer disableGutters backgroundColor="#eee">
+				<AppHeader/>
+				<Routes />
+					{posts.map((post) =>
+						<PostDetailsCard post={post} key={post._id} />
+					)}
+			</AppContainer>
+		</Holder>
 	);
 }
 

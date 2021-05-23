@@ -13,6 +13,8 @@ export const USER_PROFILE_REQUEST = 'USER_PROFILE_REQUEST';
 export const USER_PROFILE_SUCCESS = 'USER_PROFILE_SUCCESS';
 export const USER_PROFILE_FAILURE = 'USER_PROFILE_FAILURE';
 
+export const LOGOUT = 'LOGOUT';
+
 export const auth = (email, password) => (dispatch, getState) => {
 	return dispatch({
 		[RSAA]: {
@@ -23,7 +25,7 @@ export const auth = (email, password) => (dispatch, getState) => {
 			}),
 			method: 'POST',
 			headers: {
-				['Content-Type']: 'application/json'
+				'Content-Type': 'application/json'
 			},
 			types: [
 				USER_AUTH_REQUEST,
@@ -42,8 +44,8 @@ export const getUserProfile = () => (dispatch, getState) => {
 			endpoint: getEndpointUrl('profile'),
 			method: 'GET',
 			headers: {
-				['Content-Type']: 'application/json',
-				['x-auth-token']: sessionToken
+				'Content-Type': 'application/json',
+				'x-auth-token': sessionToken
 			},
 			types: [
 				USER_PROFILE_REQUEST,
@@ -54,6 +56,10 @@ export const getUserProfile = () => (dispatch, getState) => {
 	});
 };
 
+export const logout = () => ({
+	type: LOGOUT
+})
+
 const userReducer = (state = Map(), action = {}) => {
 	switch(action.type){
 		case USER_AUTH_SUCCESS:
@@ -62,6 +68,10 @@ const userReducer = (state = Map(), action = {}) => {
 			return state.set('sessionToken', action.payload.token);
 		case USER_PROFILE_SUCCESS:
 			return state.merge(fromJS(action.payload.user));
+		case LOGOUT:
+			Cookies.remove('sessionToken');
+
+			return state.clear();
 		default:
 			return state;
 	}

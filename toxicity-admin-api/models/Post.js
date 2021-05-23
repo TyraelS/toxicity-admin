@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema({
   userId: {
@@ -14,14 +14,14 @@ const PostSchema = new mongoose.Schema({
     default: Date.now
   },
   status: {
-	type: String,
-	required: true,
-	default: 'open'
+    type: String,
+    required: true,
+    default: "open"
   },
   moderation: {
-	  type: Object,
-	  default: []
+    type: Object,
+    default: []
   }
 });
 
-module.exports = Post = mongoose.model('post', PostSchema);
+module.exports = Post = mongoose.model("post", PostSchema);
