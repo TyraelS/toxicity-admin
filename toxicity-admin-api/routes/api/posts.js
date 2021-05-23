@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator/check');
@@ -23,80 +22,80 @@ const criteriaSeverities = {
 	'sexual_explicit': 0.3,
 	'threat': 0.3,
 	'toxicity': 0.1
-}
+};
 
-//@route  POST api/users
-//@desc   register user
-//@access Public
+// @route  POST api/users
+// @desc   register user
+// @access Public
 router.get(
-  '/',
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+	'/',
+	async (req, res) => {
+		const errors = validationResult(req);
 
-	const token = req.header('x-auth-token');
-	let userFromToken = {};
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
+		}
 
-	if(token){
-		const decoded = jwt.verify(token, config.get('jwtSecret'));
+		const token = req.header('x-auth-token');
+		let userFromToken = {};
 
-		userFromToken = decoded.user;
-	}
+		if (token) {
+			const decoded = jwt.verify(token, config.get('jwtSecret'));
 
-    const { deleted, moderated } = req.body;
-	const { id } = userFromToken;
+			userFromToken = decoded.user;
+		}
 
-    try {
-      let posts;
-	  let user;
+		const { deleted, moderated } = req.body;
+		const { id } = userFromToken;
 
-	  if(id){
-		  user = await User.findById(id).select('-password');
-		  if(user.role === 'admin'){
-			  if(deleted){
-				posts = await Post.find({status: 'deleted'}).setOptions({limit: 15}).sort({moderation: {moderationDate: -1}});
-			  }
-			  else if(moderated){
-				posts = await Post.find({'moderation.moderated': true}).setOptions({limit: 15}).sort({moderation: {moderationDate: -1}});
-			  } else {
-				posts = await Post.find({status: 'open', 'moderation.moderated': false}).setOptions({limit: 15}).sort('-date');
-			  }
-		  } else {
-			posts = await Post.find({status: 'open'}).select('-moderation').setOptions({limit: 15}).sort('-date');
-		  }
-	  }
-	  else {
-		posts = await Post.find({status: 'open'}).select('-moderation').setOptions({limit: 15}).sort('-date');
-	  }
+		try {
+			let posts;
+			let user;
 
-      const payload = {
-        posts
-      };
+			if (id) {
+				user = await User.findById(id).select('-password');
+				if (user.role === 'admin') {
+					if (deleted) {
+						posts = await Post.find({ status: 'deleted' }).setOptions({ limit: 15 }).sort({ moderation: { moderationDate: -1 } });
+					} else if (moderated) {
+						posts = await Post.find({ 'moderation.moderated': true }).setOptions({ limit: 15 }).sort({ moderation: { moderationDate: -1 } });
+					} else {
+						posts = await Post.find({ status: 'open', 'moderation.moderated': false }).setOptions({ limit: 15 }).sort('-date');
+					}
+				} else {
+					posts = await Post.find({ status: 'open' }).select('-moderation').setOptions({ limit: 15 }).sort('-date');
+				}
+			} else {
+				posts = await Post.find({ status: 'open' }).select('-moderation').setOptions({ limit: 15 }).sort('-date');
+			}
+
+			const payload = {
+				posts
+			};
 
 	  res.json(payload);
 
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  }
+		} catch (err) {
+			console.error(err.message);
+			res.status(500).send('Server error');
+		}
+	}
 );
 
 router.post('/post', auth, [
 	check('content', 'message text is required').not().isEmpty()
-  ],
-  async (req, res) => {
+],
+async (req, res) => {
 	const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
 
 	const token = req.header('x-auth-token');
 	let userFromToken = {};
 
-	if(token){
+	if (token) {
 		const decoded = jwt.verify(token, config.get('jwtSecret'));
 
 		userFromToken = decoded.user;
@@ -106,50 +105,51 @@ router.post('/post', auth, [
 
 	const { id } = userFromToken;
 
-    const { content } = req.body;
+	const { content } = req.body;
 
-    try {
+	try {
 		const user = await User.findById(id).select('-password');
 
-		if(user.banned){
+		if (user.banned) {
 			res.status(400).json({ error: 'user is banned from posting' });
 		} else {
 			const model = await toxicity.load(threshold);
-			const analysisResult = await model.classify([content]);
+			const analysisResult = await model.classify([ content ]);
 			const severityCoefficient = analysisResult.reduce((acc, criteria) => {
 				const criteriaProbability = criteria.results[0].match ? 1 : criteria.results[0].probabilities['1'];
+
 				return acc + criteriaSeverities[criteria.label] * criteriaProbability;
 			}, 0);
 
-			let post = new Post({
+			const post = new Post({
 				userId: id,
 				content,
 				moderation: {
 					severityCoefficient: severityCoefficient % 1,
 					analysisResult,
 					moderated: false
-			}});
+				} });
 
 				//   ML ANALYSIS HERE
 
 			await post.save();
 			const payload = {
 				user: {
-				  id: post.id,
-				  userId: post.userId,
-				  content: post.content,
-				  date: post.date
+					id: post.id,
+					userId: post.userId,
+					content: post.content,
+					date: post.date
 				}
 			};
 
 			res.json(payload);
 		}
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  }
-)
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server error');
+	}
+}
+);
 
 router.post('/moderate', auth,
 	check('postId', 'postId is required').not().isEmpty(),
@@ -157,6 +157,7 @@ router.post('/moderate', auth,
 	check('reason', 'reason is required').not().isEmpty(),
 	async (req, res) => {
 		const errors = validationResult(req);
+
    		if (!errors.isEmpty()) {
       		return res.status(400).json({ errors: errors.array() });
     	}
@@ -164,7 +165,7 @@ router.post('/moderate', auth,
 		const token = req.header('x-auth-token');
 		let userFromToken = {};
 
-		if(token){
+		if (token) {
 			const decoded = jwt.verify(token, config.get('jwtSecret'));
 
 			userFromToken = decoded.user;
@@ -182,7 +183,7 @@ router.post('/moderate', auth,
 
 			user = await User.findById(id).select('-password');
 
-			if(user.role !== 'admin'){
+			if (user.role !== 'admin') {
 				res.status(402).send('Forbidden');
 			} else {
 				post = Post.findById(postId);
@@ -195,10 +196,10 @@ router.post('/moderate', auth,
 				const payload = {
 					post
 				};
+
 				res.json(payload);
 			}
-		}
-		catch(err){
+		} catch (err) {
 			console.error(err.message);
      		res.status(500).send('Server error');
 		}

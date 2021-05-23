@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Map } from 'immutable';
 
-import { postsActions, userActions } from '../../ducks';
+import { userActions } from '../../ducks';
 
 import PostDetailsCard from '../../components/PostDetailsCard';
 import AppHeader from '../../components/AppHeader';
@@ -13,20 +13,19 @@ import useActionCreators from '../../hooks/useActionCreators';
 import Holder, { AppContainer } from './AppRoot.style';
 
 const AppRoot = () => {
-	const [fetchPosts, getUserProfile] = useActionCreators([postsActions.fetchPosts, userActions.getUserProfile]);
+	const [getUserProfile] = useActionCreators([userActions.getUserProfile]);
 	const sessionToken = useSelector(state => state.getIn(['user', 'sessionToken']));
 	const posts = useSelector(state => state.get('posts', Map())).toList().toJS();
 
 	useEffect(() => {
 		if(sessionToken){
 			getUserProfile();
-			fetchPosts();
 		}
-	}, []);
+	}, [sessionToken, getUserProfile]);
 
 	return (
 		<Holder>
-			<AppContainer disableGutters backgroundColor="#eee">
+			<AppContainer disableGutters>
 				<AppHeader/>
 				<Routes />
 					{posts.map((post) =>

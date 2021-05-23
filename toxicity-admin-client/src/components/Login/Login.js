@@ -52,7 +52,7 @@ const Login = () => {
 	const [ emailManuallyChanged, setEmailManuallyChanged ] = useState(false);
 	const [ passwordManuallyChanged, setPasswordManuallyChanged ] = useState(false);
 	const [ loading, setLoading ] = useState(false);
-	const [ auth, getUserProfile ] = useActionCreators([userActions.auth, userActions.getUserProfile]);
+	const [ auth ] = useActionCreators([userActions.auth]);
 	const loggedIn = useSelector(state => !!state.getIn(['user', 'sessionToken']));
 	const location = useLocation();
 	const history = useHistory();
@@ -91,7 +91,6 @@ const Login = () => {
 		setLoading(true);
 		auth(email, password).then(() => {
 			setLoading(false);
-			getUserProfile();
 		});
 	};
 
