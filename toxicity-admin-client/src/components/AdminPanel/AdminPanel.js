@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from '@material-ui/core/TableContainer'
@@ -55,21 +55,17 @@ const AdminTable = ({posts}) => {
 	const [sortingRule, setSortingRule] = useState();
 	const [order, setOrder] = useState();
 
-	useEffect(() => {
-		setSortedPosts(posts);
-	}, [posts]);
-
-	const applySorting = (fieldName) => () => {
+	const applySorting = useCallback((fieldName, changeOrder = true) => () => {
 		if(fieldName === 'date'){
 			if(sortingRule !== fieldName){
 				setSortingRule('date');
 				setSortedPosts(posts.sort((a, b) => {
 					return Date.parse(a.date) < Date.parse(b.date);
 				}));
-				setOrder('asc');
+				changeOrder && setOrder('asc');
 			} else {
 				setSortingRule('date');
-				setOrder(order === 'asc' ? 'desc' : 'asc');
+				changeOrder && setOrder(order === 'asc' ? 'desc' : 'asc');
 				setSortedPosts(sortedPosts.reverse())
 			}
 		} else if(fieldName === 'severityCoefficient'){
@@ -78,14 +74,21 @@ const AdminTable = ({posts}) => {
 				setSortedPosts(posts.sort((a, b) => {
 					return a.moderation.severityCoefficient < b.moderation.severityCoefficient;
 				}));
-				setOrder('asc');
+				changeOrder && setOrder('asc');
 			} else {
 				setSortingRule('severityCoefficient');
-				setOrder(order === 'asc' ? 'desc' : 'asc');
+				changeOrder && setOrder(order === 'asc' ? 'desc' : 'asc');
 				setSortedPosts(sortedPosts.reverse());
 			}
 		}
-	}
+	});
+
+	useEffect(() => {
+		if(!posts.keySeq().every((value) => sortedPosts.has(value))){
+			setSortedPosts(posts);
+			sortingRule && applySorting(sortingRule, false)
+		};
+	}, [sortingRule, sortedPosts, posts, applySorting]);
 
 
 	return(
