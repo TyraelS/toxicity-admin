@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
   res.send('API Running');
 });
 
-var whitelist = ['http://localhost:3000', 'http://example2.com']
+var whitelist = ['http://localhost:3000', 'http://localhost:3001']
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {

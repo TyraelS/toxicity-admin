@@ -4,6 +4,8 @@ import { fromJS, Map } from 'immutable';
 import config from '../config';
 import { getEndpointUrl } from '../utils/fetchHelpers';
 
+import { LOGOUT } from './user';
+
 export const POSTS_FETCH_REQUEST = 'POSTS_FETCH_REQUEST';
 export const POSTS_FETCH_SUCCESS = 'POSTS_FETCH_SUCCESS';
 export const POSTS_FETCH_FAILURE = 'POSTS_FETCH_FAILURE';
@@ -39,6 +41,8 @@ const postsReducer = (state = Map(), action = {}) => {
 			}
 
 			return state;
+		case LOGOUT:
+			return state.clear()
 		default:
 			return state;
 	}
