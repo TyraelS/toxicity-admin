@@ -4,7 +4,8 @@ const appConfig = {
 	post: '/posts/post',
 	createPost: '/posts/post',
 	auth: '/auth',
-	profile: '/users/profile'
+	profile: '/users/profile',
+	moderate: '/posts/moderate'
 };
 
 export default appConfig;

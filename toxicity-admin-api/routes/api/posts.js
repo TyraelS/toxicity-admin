@@ -114,9 +114,10 @@ router.get('/post', auth,
 						userId: post.userId,
 						content: post.content,
 						date: post.date,
-						username: user.modelName,
+						username: user.name,
 						email: user.email,
-						moderation: post.moderation
+						moderation: post.moderation,
+						status: post.status
 					}
 				};
 
@@ -203,7 +204,6 @@ async (req, res) => {
 router.post('/moderate', auth,
 	check('postId', 'postId is required').not().isEmpty(),
 	check('status', 'updated status is required').not().isEmpty(),
-	check('reason', 'reason is required').not().isEmpty(),
 	async (req, res) => {
 		const errors = validationResult(req);
 
@@ -224,24 +224,26 @@ router.post('/moderate', auth,
 
 		const { id } = userFromToken;
 
-    	const { postId, status, reason } = req.body;
+    	const { postId, status } = req.body;
 
     	try {
 			let user;
-			let post;
 
 			user = await User.findById(id).select('-password');
 
 			if (user.role !== 'admin') {
 				res.status(402).send('Forbidden');
 			} else {
-				post = Post.findById(postId);
-				post.moderation.moderated = true;
-				post.moderation.moderationDate = Date.now();
-				post.moderation.reason = reason;
-				post.status = status;
+				const post = await Post.findByIdAndUpdate(postId, {
+					'moderation.moderated': true,
+					'moderation.moderationDate': Date.now(),
+					status
+				});
+				// post.moderation.moderated = true;
+				// post.moderation.moderationDate = Date.now();
+				// post.status = status;
 
-				await post.save();
+				// await post.update();
 				const payload = {
 					post
 				};

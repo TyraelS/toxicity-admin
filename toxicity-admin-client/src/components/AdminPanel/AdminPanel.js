@@ -16,6 +16,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import CloseIcon from '@material-ui/icons/Close';
 import { Map } from 'immutable';
 
 import PostDetailsCard from '../PostDetailsCard';
@@ -62,7 +63,8 @@ const useStyles = makeStyles((theme) => ({
 		backgroundColor: theme.palette.background.paper,
 		boxShadow: theme.shadows[5],
 		width: '75%',
-		height: '70vh',
+		height: '80vh',
+		overflowY: 'scroll',
 		padding: theme.spacing(2, 4, 3),
 	},
 	spinnerHolder:{
@@ -70,7 +72,13 @@ const useStyles = makeStyles((theme) => ({
 		alignItems: 'center',
 		justifyContent: 'center',
 		height: '100%'
-	}
+	},
+	'close':{
+		gridArea: 'close',
+		display: 'flex',
+		justifyContent: 'flex-end',
+		alignItems: 'center'
+	},
   }));
 
 let timer = null;
@@ -111,7 +119,7 @@ const AdminTable = ({posts}) => {
 	});
 
 	useEffect(() => {
-		if(!posts.keySeq().every((value) => sortedPosts.has(value))){
+		if(posts.size !== sortedPosts.size || !posts.keySeq().every((value) => sortedPosts.has(value))){
 			setSortedPosts(posts);
 			sortingRule && applySorting(sortingRule, false)
 		};
@@ -202,12 +210,17 @@ const PostDetailsModal = memo(({postId, closePost}) => {
 
 		<Fade in={open}>
 			<Fragment>
-
 				<div className={classes.paper}>
 				{loading && <Box className={classes.spinnerHolder}>
 						<CircularProgress />
 				</Box> }
-				{!loading && postInfo && <PostDetailsCard post = { postInfo } />}
+				{!loading && postInfo &&
+					<div>
+						<div className={classes.close}>
+							<CloseIcon className={classes.rowPointer} onClick = {closeHandler} fontSize="large"/>
+						</div>
+						<PostDetailsCard post = { postInfo } closeHandler ={ closeHandler } />
+					</div>}
 				</div>
 			</Fragment>
         </Fade>
