@@ -62,10 +62,12 @@ const useStyles = makeStyles((theme) => ({
 	paper: {
 		backgroundColor: theme.palette.background.paper,
 		boxShadow: theme.shadows[5],
-		width: '75%',
-		height: '80vh',
+		width: '85%',
+		minHeight: '80vh',
+		maxHeight: '80vh',
 		overflowY: 'scroll',
 		padding: theme.spacing(2, 4, 3),
+		boxSizing: 'border-box'
 	},
 	spinnerHolder:{
 		display: 'flex',
@@ -73,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
 		justifyContent: 'center',
 		height: '100%'
 	},
-	'close':{
+	close:{
 		gridArea: 'close',
 		display: 'flex',
 		justifyContent: 'flex-end',
@@ -132,7 +134,7 @@ const AdminTable = ({posts}) => {
 
 	const closePost = useCallback(() => {
 		setOpenedPost(null);
-	});
+	}, []);
 
 	return(
 		<Fragment>
@@ -215,7 +217,7 @@ const PostDetailsModal = memo(({postId, closePost}) => {
 						<CircularProgress />
 				</Box> }
 				{!loading && postInfo &&
-					<div>
+					<div style={{height: '100%', width: '100%',}}>
 						<div className={classes.close}>
 							<CloseIcon className={classes.rowPointer} onClick = {closeHandler} fontSize="large"/>
 						</div>

@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
 		width: '100%',
 		'@media (max-width: 960px)':{
 			gridTemplateColumns: '1fr',
-			gridTemplateRows: '1fr 1fr',
+			gridTemplateRows: '0.25fr 1fr',
 			gridTemplateAreas: `
 				"chart"
 				"description"
@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme) => ({
 	  'chart': {
 		  gridArea: 'chart',
 		  '& > *':{
+			  maxWidth: '100%',
 			  maxHeight: '100%'
 		  }
 	  },
