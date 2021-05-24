@@ -6,10 +6,11 @@ import { Map, fromJS, Set, isIndexed } from 'immutable';
 import Immutable from 'immutable';
 import Cookies from 'js-cookie';
 
-import { postsReducer, userReducer } from '../ducks';
+import { postsReducer, postReducer, userReducer } from '../ducks';
 
 const rootReducer  = combineReducers({
 	posts: postsReducer,
+	post: postReducer,
 	user: userReducer
 });
 

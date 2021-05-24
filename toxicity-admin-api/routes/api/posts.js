@@ -82,6 +82,55 @@ router.get(
 	}
 );
 
+router.get('/post', auth,
+	async (req, res) => {
+		const errors = validationResult(req);
+
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
+		}
+
+		const token = req.header('x-auth-token');
+		let userFromToken = {};
+
+		if (token) {
+			const decoded = jwt.verify(token, config.get('jwtSecret'));
+
+			userFromToken = decoded.user;
+		} else {
+			res.status(401).send('Forbidden');
+		}
+
+		const { id } = userFromToken;
+		const { postId } = req.query;
+
+		try {
+			const user = await User.findById(id).select('-password');
+			const post = await Post.findById(postId);
+			if (user.role === 'admin') {
+				const payload = {
+					post: {
+						id: post.id,
+						userId: post.userId,
+						content: post.content,
+						date: post.date,
+						username: user.modelName,
+						email: user.email,
+						moderation: post.moderation
+					}
+				};
+
+				res.json(payload);
+			} else {
+				res.status(402).send('Forbidden');
+			}
+		} catch (err) {
+			console.error(err.message);
+			res.status(500).send('Server error');
+		}
+	}
+);
+
 router.post('/post', auth, [
 	check('content', 'message text is required').not().isEmpty()
 ],

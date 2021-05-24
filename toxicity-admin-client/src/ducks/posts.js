@@ -19,8 +19,8 @@ export const fetchPosts = () => (dispatch, getState) => {
 			endpoint: getEndpointUrl('posts', {userId}),
 			method: 'GET',
 			headers: {
-				['Content-Type']: 'application/json',
-				['x-auth-token']: sessionToken
+				'Content-Type': 'application/json',
+				'x-auth-token': sessionToken
 			},
 			types: [
 				POSTS_FETCH_REQUEST,

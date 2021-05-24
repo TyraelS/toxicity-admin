@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback, memo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import TableContainer from '@material-ui/core/TableContainer'
@@ -11,8 +11,16 @@ import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Typography from '@material-ui/core/Typography';
 import WarningIcon from '@material-ui/icons/Warning';
+import Modal from '@material-ui/core/Modal';
+import Backdrop from '@material-ui/core/Backdrop';
+import Fade from '@material-ui/core/Fade';
+import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { Map } from 'immutable';
 
-import { postsActions } from '../../ducks';
+import PostDetailsCard from '../PostDetailsCard';
+
+import { postsActions, postActions } from '../../ducks';
 
 import useActionCreators from '../../hooks/useActionCreators';
 
@@ -44,6 +52,24 @@ const useStyles = makeStyles((theme) => ({
 		overflow: 'hidden',
 		textOverflow: 'ellipsis',
 		wordBreak: 'break-word'
+	},
+	modal: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+	  },
+	paper: {
+		backgroundColor: theme.palette.background.paper,
+		boxShadow: theme.shadows[5],
+		width: '75%',
+		height: '70vh',
+		padding: theme.spacing(2, 4, 3),
+	},
+	spinnerHolder:{
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		height: '100%'
 	}
   }));
 
@@ -54,6 +80,7 @@ const AdminTable = ({posts}) => {
 	const [sortedPosts, setSortedPosts] = useState(posts);
 	const [sortingRule, setSortingRule] = useState();
 	const [order, setOrder] = useState();
+	const [openedPost, setOpenedPost] = useState();
 
 	const applySorting = useCallback((fieldName, changeOrder = true) => () => {
 		if(fieldName === 'date'){
@@ -90,9 +117,19 @@ const AdminTable = ({posts}) => {
 		};
 	}, [sortingRule, sortedPosts, posts, applySorting]);
 
+	const openPost = (postId) => () => {
+		setOpenedPost(null);
+		setOpenedPost(postId);
+	}
+
+	const closePost = useCallback(() => {
+		setOpenedPost(null);
+	});
 
 	return(
-		<TableContainer component = { Paper }>
+		<Fragment>
+			{openedPost && <PostDetailsModal postId={openedPost} closePost = { closePost }/>}
+			<TableContainer component = { Paper }>
 			<Table stickyHeader size="medium">
 				<TableHead>
 					<TableRow>
@@ -112,7 +149,7 @@ const AdminTable = ({posts}) => {
 				</TableHead>
 					<TableBody>
 						{sortedPosts.map((post, index) => (
-							<TableRow hover key={index} className={classes.rowPointer}>
+							<TableRow hover onClick = { openPost(post._id) } key={index} className={classes.rowPointer}>
 								<TableCell component="th" scope="row">
 									{post.date}
 								</TableCell>
@@ -130,8 +167,53 @@ const AdminTable = ({posts}) => {
 						)).toList().toArray()}
 					</TableBody>
 			</Table>
-		</TableContainer>)
+		</TableContainer>
+		</Fragment>)
 };
+
+const PostDetailsModal = memo(({postId, closePost}) => {
+	const classes = useStyles();
+	const [ fetchPost, clearPost ] = useActionCreators([postActions.fetchPost, postActions.clearPost]);
+	const [ loading, setLoading ] = useState(true);
+	const [ open, setOpen ] = useState(true);
+	const postInfo = useSelector(state => state.getIn(['post', 'postView' ]));
+
+	useEffect(() => {
+		fetchPost(postId).then(() => setLoading(false));
+	}, [])
+
+	const closeHandler = () => {
+		setOpen(false);
+		clearPost();
+		setTimeout(() => closePost(), 500);
+	}
+
+	return (
+		<Modal
+			className={classes.modal}
+			open={open}
+			onClose={closeHandler}
+			closeAfterTransition
+			BackdropComponent={Backdrop}
+			BackdropProps={{
+			timeout: 500,
+		}}
+      >
+
+		<Fade in={open}>
+			<Fragment>
+
+				<div className={classes.paper}>
+				{loading && <Box className={classes.spinnerHolder}>
+						<CircularProgress />
+				</Box> }
+				{!loading && postInfo && <PostDetailsCard post = { postInfo } />}
+				</div>
+			</Fragment>
+        </Fade>
+      </Modal>
+	);
+});
 
 const AdminPanel = () => {
 	const classes = useStyles();

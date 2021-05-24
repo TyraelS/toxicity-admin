@@ -103,7 +103,7 @@ const Login = () => {
 			{ !loading && <form className={classes.formHolder} autoComplete="off">
   				<TextField required error={ emailError } helperText={emailError} fullWidth id="email" label="Email" variant="outlined" onChange={onEmailChange}/>
   				<TextField required error={ passwordError} helperText = { passwordError } fullWidth type="password" id="password" label="Password" variant="outlined" onChange={onPasswordChange} />
-				<Button size="large" variant="contained" disabled={emailError || passwordError} fullWidth disableElevation color="primary" onClick={login}>Login</Button>
+				<Button size="large" variant="contained" disabled={!email || !password || emailError || passwordError} fullWidth disableElevation color="primary" onClick={login}>Login</Button>
 			</form> }
 		</Container>
 	)
