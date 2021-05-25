@@ -27,6 +27,7 @@ const AppHeader = () => {
 	const [ logout ] = useActionCreators([userActions.logout]);
 	const classes = useStyles();
 	const loggedIn = useSelector(state => !!state.getIn(['user', 'sessionToken']));
+	const role = useSelector(state => state.getIn(['user', 'role']));
 	const history = useHistory();
 	const location = useLocation();
 
@@ -38,6 +39,13 @@ const AppHeader = () => {
 		location.pathname !== '/registration' && history.push('/registration');
 	}
 
+	const openAdmin = () => {
+		location.pathname !== '/' && history.push('/');
+	}
+
+	const openBlog = () => {
+		location.pathname !== '/blog' && history.push('/blog');
+	}
 
 	return (
 		<AppBar position="sticky">
@@ -46,6 +54,8 @@ const AppHeader = () => {
 					  FakeBlog
 				</Typography>
 				{!loggedIn && <Button variant="contained" disableElevation color="secondary" onClick={openLogin}>Login</Button>}
+				{role === 'admin' && <Button variant="contained" disableElevation color="secondary" onClick={openBlog}>Blog</Button>}
+				{role === 'admin' && <Button variant="contained" disableElevation color="secondary" onClick={openAdmin}>Admin Page</Button>}
 				{!loggedIn && <Button variant="contained" disableElevation color="primary" onClick={openRegistration}>Registration</Button>}
 				{loggedIn && <Button variant="contained" disableElevation color="secondary" onClick={logout}>Logout</Button>}
 			</Toolbar>

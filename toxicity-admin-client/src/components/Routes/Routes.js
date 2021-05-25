@@ -15,6 +15,7 @@ const Routes = () => {
 			<Route exact path="/login" component={ Login } />
 			{(loggedIn && userRole !== 'admin') && <Route exact path="/" component={ AdminPanel } /> }
 			{(!loggedIn || userRole !== 'admin') && <Route exact path="/" component={ UserPage } /> }
+			<Route exact path="/blog" component={ UserPage } />
 
 			<Redirect to="/" />
 		</Switch>

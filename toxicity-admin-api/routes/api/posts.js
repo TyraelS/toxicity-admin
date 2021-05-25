@@ -45,7 +45,7 @@ router.get(
 			userFromToken = decoded.user;
 		}
 
-		const { deleted, moderated } = req.query;
+		const { deleted, moderated, open } = req.query;
 		const { id } = userFromToken;
 
 		try {
@@ -59,8 +59,10 @@ router.get(
 						posts = await Post.find({ status: 'blocked' }).setOptions({ limit: 15 }).sort({ 'moderation.moderationDate' : -1});
 					} else if (moderated) {
 						posts = await Post.find({ 'moderation.moderated': true }).setOptions({ limit: 15 }).sort({ 'moderation.moderationDate' : -1 });
+					} else if(open) {
+						posts = await Post.find({ status: 'open', 'moderation.moderated': false }).setOptions({ limit: 15 }).sort('date');
 					} else {
-						posts = await Post.find({ status: 'open', 'moderation.moderated': false }).setOptions({ limit: 15 }).sort('-date');
+						posts = await Post.find({ status: 'open' }).select('-moderation').setOptions({ limit: 15 }).sort('-date');
 					}
 				} else {
 					posts = await Post.find({ status: 'open' }).select('-moderation').setOptions({ limit: 15 }).sort('-date');

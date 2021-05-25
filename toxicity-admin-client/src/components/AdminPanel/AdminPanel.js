@@ -169,8 +169,8 @@ const AdminTable = ({posts, tab}) => {
 					</TableRow>
 				</TableHead>
 					<TableBody>
-						{sortedPosts.map((post, index) => (
-							<TableRow hover onClick = { openPost(post._id) } key={index} className={classes.rowPointer}>
+						{sortedPosts.map((post, index) =>
+							post.moderation && <TableRow hover onClick = { openPost(post._id) } key={index} className={classes.rowPointer}>
 								<TableCell component="th" scope="row">
 									{post.date}
 								</TableCell>
@@ -185,7 +185,7 @@ const AdminTable = ({posts, tab}) => {
 									<Typography>{post.moderation.severityCoefficient.toFixed(3)}</Typography>
 								</TableCell>
 							</TableRow>
-						)).toList().toArray()}
+						).toList().toArray()}
 					</TableBody>
 			</Table>
 		</TableContainer>
@@ -273,7 +273,7 @@ const AdminPanel = () => {
 	const classes = useStyles();
 	const posts = useSelector(state => state.get('posts'));
 
-	const [ fetchPosts ] = useActionCreators([postsActions.fetchPosts]);
+	const [ fetchPosts, clearPosts ] = useActionCreators([postsActions.fetchPosts, postsActions.clearPosts]);
 
 	const [value, setValue] = useState(0);
 

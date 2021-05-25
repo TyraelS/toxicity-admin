@@ -1,5 +1,5 @@
 import { RSAA } from 'redux-api-middleware';
-import { Map } from 'immutable';
+import { OrderedMap } from 'immutable';
 
 import { getEndpointUrl } from '../utils/fetchHelpers';
 
@@ -20,14 +20,27 @@ export const fetchPosts = (tab) => (dispatch, getState) => {
 		'moderated'
 	];
 
+	let params = {};
+
+	if(tab !== undefined){
+		params = {
+			[`${tabs[tab]}`]: true
+		}
+	}
+
+	const headers = {
+		'Content-Type': 'application/json',
+	};
+
+	if(sessionToken){
+		headers['x-auth-token'] = sessionToken;
+	}
+
 	return dispatch({
 		[RSAA]: {
-			endpoint: getEndpointUrl('posts', {[`${tabs[tab]}`]: true}),
+			endpoint: getEndpointUrl('posts', {...params}),
 			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'x-auth-token': sessionToken
-			},
+			headers,
 			types: [
 				POSTS_FETCH_REQUEST,
 				POSTS_FETCH_SUCCESS,
@@ -41,13 +54,13 @@ export const clearPosts = () => ({
 	type: CLEAR_POSTS
 })
 
-const postsReducer = (state = Map(), action = {}) => {
+const postsReducer = (state = OrderedMap(), action = {}) => {
 	switch(action.type){
 		case POSTS_FETCH_SUCCESS:
 			if(action.payload.posts){
 				return action.payload.posts.reduce((acc, post) => {
 					return acc.set(post._id, post);
-				}, Map());
+				}, OrderedMap());
 			}
 
 			return state;

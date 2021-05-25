@@ -11,6 +11,10 @@ export const POST_MODERATE_REQUEST = 'POST_MODERATE_REQUEST';
 export const POST_MODERATE_SUCCESS = 'POST_MODERATE_SUCCESS';
 export const POST_MODERATE_FAILURE = 'POST_MODERATE_FAILURE';
 
+export const POSTS_SEND_REQUEST = 'POSTS_SEND_REQUEST';
+export const POSTS_SEND_SUCCESS = 'POSTS_SEND_SUCCESS';
+export const POSTS_SEND_FAILURE = 'POSTS_SEND_FAILURE';
+
 export const CLEAR_POST = 'CLEAR_POST';
 
 export const fetchPost = (postId) => (dispatch, getState) => {
@@ -52,6 +56,29 @@ export const moderatePost = (postId, status) => (dispatch, getState) => {
 				POST_MODERATE_REQUEST,
 				POST_MODERATE_SUCCESS,
 				POST_MODERATE_FAILURE
+			]
+		}
+	});
+};
+
+export const sendPost = (content) => (dispatch, getState) => {
+	const sessionToken = getState().getIn(['user', 'sessionToken']);
+
+	return dispatch({
+		[RSAA]: {
+			endpoint: getEndpointUrl('sendPost'),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-auth-token': sessionToken
+			},
+			body: JSON.stringify({
+				content
+			}),
+			types: [
+				POSTS_SEND_REQUEST,
+				POSTS_SEND_SUCCESS,
+				POSTS_SEND_FAILURE
 			]
 		}
 	});
