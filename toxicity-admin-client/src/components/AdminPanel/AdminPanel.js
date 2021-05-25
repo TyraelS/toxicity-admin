@@ -124,7 +124,9 @@ const AdminTable = ({posts, tab}) => {
 	});
 
 	useEffect(() => {
-		if(posts.size !== sortedPosts.size || !posts.keySeq().every((value) => sortedPosts.has(value))){
+		if(
+			posts.size !== sortedPosts.size || !posts.every(post => sortedPosts[post._id] && post.status === sortedPosts[post._id].status)
+		){
 			setSortedPosts(posts);
 			sortingRule && applySorting(sortingRule, false)
 		};

@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const PostDetailsCard = ({post, closeHandler, tab}) => {
-	const [ moderatePost, fetchPosts ] = useActionCreators([postActions.moderatePost, postsActions.fetchPosts]);
+	const [ moderatePost, fetchPosts, clearPosts ] = useActionCreators([postActions.moderatePost, postsActions.fetchPosts, postsActions.clearPosts]);
 	const classes = useStyles();
 	const chartLabels = post.moderation.analysisResult.map(item => item.label);
 	const chartData = post.moderation.analysisResult.map(item => item.results[0].probabilities[1]);
@@ -125,7 +125,7 @@ const PostDetailsCard = ({post, closeHandler, tab}) => {
 					</div>
 					<div className={classes.controls}>
 						<Button size="large" variant="contained" onClick={moderatePostHandler('open')} disableElevation color="primary">Mark as safe</Button>
-						{tab !== 1 && <Button size="large" variant="contained" onClick={moderatePostHandler('blocked')} disableElevation color="secondary">Delete</Button> }
+						{post.status !== 'blocked' && <Button size="large" variant="contained" onClick={moderatePostHandler('blocked')} disableElevation color="secondary">Delete</Button> }
 					</div>
 				</div>
 			</div>
