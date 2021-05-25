@@ -42,6 +42,7 @@ const UserPage = () => {
 	const [fetchPosts, clearPosts, sendPost ] = useActionCreators([postsActions.fetchPosts, postsActions.clearPosts, postActions.sendPost ]);
 
 	const posts = useSelector(state => state.get('posts'));
+	const loggedIn = useSelector(state => state.getIn(['user', 'sessionToken']));
 
 	const [inputValue, setInputValue] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -75,7 +76,7 @@ const UserPage = () => {
 	}
 
 	return <div className={classes.holder}>
-		 <div className={classes.inputField}>
+		{loggedIn && <div className={classes.inputField}>
 			<TextField
 				id="standard-full-width"
 				label="Label"
@@ -102,7 +103,7 @@ const UserPage = () => {
 			>
 				{ loading ? 'Sending' : 'Send' }
 			</Button>
-		 </div>
+		 </div>}
 		{posts && posts.map((post, index) => (
 			<Card className={classes.root}>
 				<CardContent>
