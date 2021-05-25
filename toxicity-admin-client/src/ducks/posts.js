@@ -1,7 +1,6 @@
 import { RSAA } from 'redux-api-middleware';
-import { fromJS, Map } from 'immutable';
+import { Map } from 'immutable';
 
-import config from '../config';
 import { getEndpointUrl } from '../utils/fetchHelpers';
 
 import { LOGOUT } from './user';
@@ -10,13 +9,18 @@ export const POSTS_FETCH_REQUEST = 'POSTS_FETCH_REQUEST';
 export const POSTS_FETCH_SUCCESS = 'POSTS_FETCH_SUCCESS';
 export const POSTS_FETCH_FAILURE = 'POSTS_FETCH_FAILURE';
 
-export const fetchPosts = () => (dispatch, getState) => {
-	const userId = getState().getIn(['user', 'userId']);
+export const fetchPosts = (tab) => (dispatch, getState) => {
 	const sessionToken = getState().getIn(['user', 'sessionToken']);
+
+	const tabs = [
+		'open',
+		'deleted',
+		'moderated'
+	];
 
 	return dispatch({
 		[RSAA]: {
-			endpoint: getEndpointUrl('posts', {userId}),
+			endpoint: getEndpointUrl('posts', {[`${tabs[tab]}`]: true}),
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

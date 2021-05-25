@@ -17,6 +17,9 @@ import Fade from '@material-ui/core/Fade';
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import CloseIcon from '@material-ui/icons/Close';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import { Map } from 'immutable';
 
 import PostDetailsCard from '../PostDetailsCard';
@@ -85,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
 
 let timer = null;
 
-const AdminTable = ({posts}) => {
+const AdminTable = ({posts, tab}) => {
 	const classes = useStyles();
 	const [sortedPosts, setSortedPosts] = useState(posts);
 	const [sortingRule, setSortingRule] = useState();
@@ -136,9 +139,15 @@ const AdminTable = ({posts}) => {
 		setOpenedPost(null);
 	}, []);
 
+	if(!posts.size){
+		return (
+			<Typography variant='h5'>No posts available in this category, try changing the tab</Typography>
+		)
+	}
+
 	return(
 		<Fragment>
-			{openedPost && <PostDetailsModal postId={openedPost} closePost = { closePost }/>}
+			{openedPost && <PostDetailsModal tab = { tab } postId={openedPost} closePost = { closePost }/>}
 			<TableContainer component = { Paper }>
 			<Table stickyHeader size="medium">
 				<TableHead>
@@ -181,7 +190,7 @@ const AdminTable = ({posts}) => {
 		</Fragment>)
 };
 
-const PostDetailsModal = memo(({postId, closePost}) => {
+const PostDetailsModal = memo(({postId, closePost, tab}) => {
 	const classes = useStyles();
 	const [ fetchPost, clearPost ] = useActionCreators([postActions.fetchPost, postActions.clearPost]);
 	const [ loading, setLoading ] = useState(true);
@@ -221,7 +230,7 @@ const PostDetailsModal = memo(({postId, closePost}) => {
 						<div className={classes.close}>
 							<CloseIcon className={classes.rowPointer} onClick = {closeHandler} fontSize="large"/>
 						</div>
-						<PostDetailsCard post = { postInfo } closeHandler ={ closeHandler } />
+						<PostDetailsCard tab = { tab } post = { postInfo } closeHandler ={ closeHandler } />
 					</div>}
 				</div>
 			</Fragment>
@@ -230,26 +239,75 @@ const PostDetailsModal = memo(({postId, closePost}) => {
 	);
 });
 
+function TabPanel(props) {
+	const { children, value, index, ...other } = props;
+
+	return (
+	  <div
+		role="tabpanel"
+		hidden={value !== index}
+		id={`simple-tabpanel-${index}`}
+		aria-labelledby={`simple-tab-${index}`}
+		{...other}
+	  >
+		{value === index && (
+		  <Box p={3}>
+			{children}
+		  </Box>
+		)}
+	  </div>
+	);
+  }
+
+  function a11yProps(index) {
+	return {
+	  id: `simple-tab-${index}`,
+	  'aria-controls': `simple-tabpanel-${index}`,
+	};
+  }
+
+
 const AdminPanel = () => {
 	const classes = useStyles();
 	const posts = useSelector(state => state.get('posts'));
 
 	const [ fetchPosts ] = useActionCreators([postsActions.fetchPosts]);
 
+	const [value, setValue] = useState(0);
+
+  	const handleChange = (event, newValue) => {
+    	setValue(newValue);
+  	};
+
 	useEffect(() => {
-		fetchPosts().then(() => {
-			timer = setInterval(fetchPosts, 30000)
+		fetchPosts(value).then(() => {
+			timer = setInterval(() => fetchPosts(value), 30000)
 		});
 
 		return () => {
 			clearInterval(timer);
 			timer = null;
 		}
-	}, [fetchPosts]);
+	}, [fetchPosts, value]);
 
 	return(
 		<div className={classes.root}>
-			<AdminTable posts = { posts } />
+			<AppBar position="static">
+				<Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+					<Tab label="Open" {...a11yProps('open')} />
+					<Tab label="Blocked" {...a11yProps('deleted')} />
+					<Tab label="Moderated" {...a11yProps('moderated')} />
+				</Tabs>
+				</AppBar>
+				<TabPanel value={value} index={0}>
+					<AdminTable posts = { posts } tab={0}/>
+				</TabPanel>
+				<TabPanel value={value} index={1}>
+					<AdminTable posts = { posts } tab={1}/>
+				</TabPanel>
+				<TabPanel value={value} index={2}>
+					<AdminTable posts = { posts } tab={2}/>
+				</TabPanel>
 		</div>
 	)
 };

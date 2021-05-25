@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
 		}
 }));
 
-const PostDetailsCard = ({post, closeHandler}) => {
+const PostDetailsCard = ({post, closeHandler, tab}) => {
 	const [ moderatePost, fetchPosts ] = useActionCreators([postActions.moderatePost, postsActions.fetchPosts]);
 	const classes = useStyles();
 	const chartLabels = post.moderation.analysisResult.map(item => item.label);
@@ -89,7 +89,7 @@ const PostDetailsCard = ({post, closeHandler}) => {
 
 	const moderatePostHandler = (status) => () => {
 		moderatePost(post.id, status).then(() => {
-			fetchPosts();
+			fetchPosts(tab);
 			closeHandler();
 		})
 	};
@@ -125,7 +125,7 @@ const PostDetailsCard = ({post, closeHandler}) => {
 					</div>
 					<div className={classes.controls}>
 						<Button size="large" variant="contained" onClick={moderatePostHandler('open')} disableElevation color="primary">Mark as safe</Button>
-						<Button size="large" variant="contained" onClick={moderatePostHandler('blocked')} disableElevation color="secondary">Delete</Button>
+						{tab !== 1 && <Button size="large" variant="contained" onClick={moderatePostHandler('blocked')} disableElevation color="secondary">Delete</Button> }
 					</div>
 				</div>
 			</div>

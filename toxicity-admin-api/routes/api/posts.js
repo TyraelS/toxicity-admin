@@ -45,7 +45,7 @@ router.get(
 			userFromToken = decoded.user;
 		}
 
-		const { deleted, moderated } = req.body;
+		const { deleted, moderated } = req.query;
 		const { id } = userFromToken;
 
 		try {
@@ -56,9 +56,9 @@ router.get(
 				user = await User.findById(id).select('-password');
 				if (user.role === 'admin') {
 					if (deleted) {
-						posts = await Post.find({ status: 'deleted' }).setOptions({ limit: 15 }).sort({ moderation: { moderationDate: -1 } });
+						posts = await Post.find({ status: 'blocked' }).setOptions({ limit: 15 }).sort({ 'moderation.moderationDate' : -1});
 					} else if (moderated) {
-						posts = await Post.find({ 'moderation.moderated': true }).setOptions({ limit: 15 }).sort({ moderation: { moderationDate: -1 } });
+						posts = await Post.find({ 'moderation.moderated': true }).setOptions({ limit: 15 }).sort({ 'moderation.moderationDate' : -1 });
 					} else {
 						posts = await Post.find({ status: 'open', 'moderation.moderated': false }).setOptions({ limit: 15 }).sort('-date');
 					}
